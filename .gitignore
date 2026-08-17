@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Playwright scratch state and screenshot captures
+.playwright-cli/
+output/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Editor and OS cruft
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Logs
+*.log
+npm-debug.log*

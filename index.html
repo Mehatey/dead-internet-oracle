@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#050706" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23b8ad87' d='M4 4h24v24H4z'/%3E%3Cpath d='M8 9h16v2H8zm0 5h11v2H8zm0 5h14v2H8z'/%3E%3C/svg%3E"
+    />
+    <title>DEAD INTERNET ORACLE</title>
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="world"></canvas>
+      <header>
+        <span>DEAD INTERNET ORACLE</span><i id="signal">LOCAL SIGNAL</i>
+      </header>
+      <div class="boot" id="boot">
+        <p>THE NETWORK REMEMBERS INCORRECTLY.</p>
+        <button id="enter">ENTER THE ARCHIVE</button>
+        <small>MOVE TO SEARCH · HOLD TO DESCEND · SWIPE TO TEAR</small>
+      </div>
+      <button class="vision" id="vision">USE HANDS</button>
+      <div class="depth">
+        <span id="depth">DEPTH 0000</span><b></b><em id="artifact"></em>
+      </div>
+      <div class="oracle" id="oracle"></div>
+      <div class="cursor" id="cursor"><span></span></div>
+      <div class="instructions" id="instructions">
+        MOVE TO SEARCH · HOLD TO DESCEND · SWIPE TO TEAR
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,360 @@
+:root {
+  font-family: "Arial Narrow", "Helvetica Neue", sans-serif;
+  color: #b8c5bc;
+  background: #030605;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #030605;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+#world {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#app::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.018) 0,
+    rgba(255, 255, 255, 0.018) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: screen;
+}
+header {
+  position: fixed;
+  z-index: 7;
+  left: 24px;
+  right: 24px;
+  top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font:
+    700 9px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 9px #7bb4a0;
+}
+header i {
+  font-style: normal;
+  font-weight: 400;
+  color: #6f8d82;
+}
+.boot {
+  position: fixed;
+  z-index: 9;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 22px;
+  background: rgba(2, 5, 4, 0.42);
+  backdrop-filter: blur(7px);
+  transition:
+    opacity 1.4s,
+    filter 1.4s;
+}
+.boot.gone {
+  opacity: 0;
+  filter: blur(24px);
+  pointer-events: none;
+}
+.boot p {
+  max-width: 840px;
+  margin: 0;
+  text-align: center;
+  color: #c8be91;
+  font:
+    400 clamp(34px, 6vw, 86px)/0.82 "Times New Roman",
+    serif;
+  letter-spacing: -0.065em;
+  text-shadow:
+    2px 0 #71304f,
+    -2px 0 #2a7465;
+}
+.boot button {
+  padding: 10px 16px;
+  border: 1px solid #889c91;
+  background: rgba(7, 15, 12, 0.72);
+  font:
+    700 9px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+.boot button:hover {
+  color: #07110d;
+  background: #b8c5bc;
+}
+.boot small {
+  font:
+    400 8px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.14em;
+  color: #7e8d85;
+}
+.vision {
+  position: fixed;
+  z-index: 7;
+  right: 24px;
+  bottom: 20px;
+  border: 0;
+  border-bottom: 1px solid #50655c;
+  background: none;
+  padding: 5px 0;
+  font:
+    400 8px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.13em;
+  cursor: pointer;
+}
+.vision:disabled {
+  opacity: 0.55;
+}
+.depth {
+  position: fixed;
+  z-index: 7;
+  left: 24px;
+  bottom: 20px;
+  display: grid;
+  grid-template-columns: auto 80px;
+  gap: 12px;
+  align-items: center;
+  font:
+    400 8px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.12em;
+}
+.depth b {
+  height: 1px;
+  background: #6b7c74;
+}
+.depth em {
+  display: none;
+}
+.oracle {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.oracle-entry {
+  --ink: #a9ded0;
+  --echo: #c4a56a;
+  position: absolute;
+  left: var(--anchor-x);
+  top: var(--anchor-y);
+  width: min(520px, 58vw);
+  isolation: isolate;
+  color: var(--ink);
+  perspective: 760px;
+  transform-style: preserve-3d;
+  translate: -22% -50%;
+  mix-blend-mode: screen;
+  transition:
+    opacity 0.65s ease,
+    filter 0.65s ease;
+}
+.oracle-entry p {
+  margin: 0;
+  color: var(--ink);
+  font:
+    italic 400 clamp(15px, 1.9vw, 31px)/1.2 Georgia,
+    serif;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  transform-style: preserve-3d;
+  transform: rotateX(8deg) rotateY(-13deg);
+}
+.oracle-entry p span {
+  position: relative;
+  display: inline-block;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+  -webkit-text-stroke: 0.35px color-mix(in srgb, white 30%, var(--ink));
+  transform-origin: 50% 50%;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+  animation: glyph-in 0.48s cubic-bezier(0.16, 0.78, 0.18, 1) both;
+}
+.oracle-entry p span::before,
+.oracle-entry p span::after {
+  content: attr(data-char);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+.oracle-entry p span::before {
+  z-index: -1;
+  color: transparent;
+  -webkit-text-stroke: 0.6px color-mix(in srgb, var(--echo) 54%, transparent);
+  transform: translate3d(2px, 3px, -12px);
+}
+.oracle-entry p span::after {
+  z-index: -2;
+  color: color-mix(in srgb, var(--echo) 12%, transparent);
+  transform: translate3d(-3px, -2px, -28px);
+  filter: blur(0.8px);
+}
+.oracle-entry.whisper {
+  opacity: 0.78;
+}
+.oracle-entry.whisper p {
+  transform: rotateX(-7deg) rotateY(17deg) rotateZ(-2deg);
+}
+.oracle-entry p span.erase {
+  animation: glyph-out 0.14s ease-in both;
+}
+.oracle-entry.spent {
+  opacity: 0;
+  filter: blur(7px);
+}
+@keyframes glyph-in {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(0, 0.35em, -110px) rotateX(58deg)
+      rotateY(var(--tilt)) scale(0.72);
+  }
+  100% {
+    opacity: 0.74;
+    filter: blur(0);
+    transform: translate3d(0, 0, var(--depth)) rotateX(0) rotateY(0) scale(1);
+  }
+}
+@keyframes glyph-out {
+  100% {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translate3d(-0.45em, 0, 85px) rotateY(-42deg) scaleX(0.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oracle-entry * {
+    animation-duration: 0.01ms !important;
+  }
+}
+.cursor {
+  --x: 50vw;
+  --y: 50vh;
+  position: fixed;
+  z-index: 8;
+  left: var(--x);
+  top: var(--y);
+  width: 34px;
+  height: 34px;
+  translate: -50% -50%;
+  border: 1px solid rgba(174, 196, 184, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition:
+    width 0.25s,
+    height 0.25s,
+    border-radius 0.25s;
+}
+.cursor span {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(181, 157, 102, 0.5);
+  transform: rotate(45deg);
+}
+.cursor::after {
+  content: attr(data-mode);
+  position: absolute;
+  left: 42px;
+  top: 13px;
+  font:
+    400 7px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.1em;
+  color: #a5b6ad;
+}
+.cursor[data-mode="DESCEND"] {
+  width: 76px;
+  height: 76px;
+  border-color: #c5aa68;
+}
+.cursor[data-mode="TEAR"] {
+  width: 64px;
+  height: 22px;
+  border-radius: 0;
+  border-color: #b73466;
+  transform: skewX(-24deg);
+}
+.instructions {
+  position: fixed;
+  z-index: 7;
+  left: 50%;
+  bottom: 20px;
+  translate: -50% 12px;
+  font:
+    400 8px/1 "Courier New",
+    monospace;
+  letter-spacing: 0.14em;
+  color: #c0b27d;
+  opacity: 0;
+  transition:
+    opacity 0.7s,
+    translate 0.7s;
+}
+.instructions.show {
+  opacity: 1;
+  translate: -50% 0;
+}
+@media (max-width: 700px) {
+  header,
+  .depth {
+    left: 14px;
+  }
+  .vision {
+    right: 14px;
+  }
+  .depth {
+    grid-template-columns: auto 34px;
+  }
+  .boot {
+    padding: 24px;
+  }
+  .boot p {
+    font-size: 44px;
+  }
+  .boot small {
+    max-width: 280px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .instructions {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oracle p {
+    animation-duration: 10s;
+  }
+  .cursor {
+    transition: none;
+  }
+}
