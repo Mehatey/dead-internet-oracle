@@ -236,7 +236,26 @@ const frame = (now: number) => {
   const dt = Math.min(0.05, (now - lastTime) / 1000);
   lastTime = now;
   if (cameraGesture?.hands) {
-    gesture = cameraGesture;
+    const follow = 1 - Math.exp(-dt * 18),
+      quickFollow = 1 - Math.exp(-dt * 24);
+    gesture = {
+      x: gesture.x + (cameraGesture.x - gesture.x) * follow,
+      y: gesture.y + (cameraGesture.y - gesture.y) * follow,
+      pinch:
+        gesture.pinch + (cameraGesture.pinch - gesture.pinch) * quickFollow,
+      openness:
+        gesture.openness + (cameraGesture.openness - gesture.openness) * follow,
+      velocity:
+        gesture.velocity + (cameraGesture.velocity - gesture.velocity) * follow,
+      hands: cameraGesture.hands,
+      handDistance:
+        gesture.handDistance +
+        (cameraGesture.handDistance - gesture.handDistance) * follow,
+      secondX:
+        gesture.secondX + (cameraGesture.secondX - gesture.secondX) * follow,
+      secondY:
+        gesture.secondY + (cameraGesture.secondY - gesture.secondY) * follow,
+    };
     holding = cameraGesture.pinch > 0.58;
     cursor.style.setProperty("--x", `${gesture.x * innerWidth}px`);
     cursor.style.setProperty("--y", `${(1 - gesture.y) * innerHeight}px`);

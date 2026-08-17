@@ -244,6 +244,8 @@ export class OracleWorld {
   private archive: ArchiveObject[] = [];
   private artifacts: ArchiveObject[] = [];
   private companions: ArchiveObject[] = [];
+  private artifactSet = new Set<ArchiveObject>();
+  private companionSet = new Set<ArchiveObject>();
   private pngClouds: THREE.Points[] = [];
   private worldShells: THREE.Mesh[] = [];
   private worldShellLoading = new Set<number>();
@@ -275,6 +277,7 @@ export class OracleWorld {
   onArtifact?: (name: string, chapter: number) => void;
   onChapter?: (chapter: number, name: string) => void;
   private activeArtifact = "";
+  private warmupTimer = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
@@ -317,8 +320,24 @@ export class OracleWorld {
     this.composer.addPass(this.afterimage);
     this.distortion = new ShaderPass(distortionShader);
     this.composer.addPass(this.distortion);
+    this.scheduleShaderWarmup();
     addEventListener("resize", this.resize);
     this.resize();
+  }
+
+  private scheduleShaderWarmup() {
+    clearTimeout(this.warmupTimer);
+    this.warmupTimer = window.setTimeout(() => {
+      void this.renderer.compileAsync(this.scene, this.camera);
+    }, 180);
+  }
+
+  private freezeStaticHierarchy(root: THREE.Object3D) {
+    root.traverse((child) => {
+      if (child === root) return;
+      child.updateMatrix();
+      child.matrixAutoUpdate = false;
+    });
   }
 
   private makeArchiveTexture(index: number) {
@@ -881,6 +900,7 @@ export class OracleWorld {
         this.root.add(wrapper);
         this.archive.push(wrapper);
         this.artifacts.push(wrapper);
+        this.artifactSet.add(wrapper);
         if (name.includes("USERS")) {
           for (let c = 0; c < 5; c++) {
             const clone = model.clone();
@@ -890,6 +910,8 @@ export class OracleWorld {
             wrapper.add(clone);
           }
         }
+        this.freezeStaticHierarchy(wrapper);
+        this.scheduleShaderWarmup();
       }),
     );
   }
@@ -981,9 +1003,12 @@ export class OracleWorld {
         };
         wrapper.position.set(targetX, targetY, z);
         wrapper.add(model);
+        this.freezeStaticHierarchy(wrapper);
         this.root.add(wrapper);
         this.archive.push(wrapper);
         this.companions.push(wrapper);
+        this.companionSet.add(wrapper);
+        this.scheduleShaderWarmup();
       }),
     );
   }
@@ -1227,7 +1252,10 @@ export class OracleWorld {
       while (z > 3) z -= ARCHIVE_DEPTH;
       while (z < -ARCHIVE_DEPTH + 3) z += ARCHIVE_DEPTH;
       gate.position.z = z;
-      const focus = focusAt(Math.abs(z + 4));
+      const distance = Math.abs(z + 4);
+      gate.visible = distance < 14;
+      if (!gate.visible) return;
+      const focus = focusAt(distance);
       gate.rotation.z += dt * (0.08 + i * 0.035);
       gate.rotation.x = Math.sin(time * 0.18 + i) * 0.14;
       gate.scale.setScalar(0.72 + focus * 1.55);
@@ -1241,8 +1269,14 @@ export class OracleWorld {
       while (z > 3) z -= ARCHIVE_DEPTH;
       while (z < -ARCHIVE_DEPTH + 3) z += ARCHIVE_DEPTH;
       cloud.position.z = z;
-      const focus = focusAt(Math.abs(z + 4)),
-        material = cloud.material as THREE.ShaderMaterial,
+      const distance = Math.abs(z + 4),
+        material = cloud.material as THREE.ShaderMaterial;
+      cloud.visible = distance < 17.5;
+      if (!cloud.visible) {
+        material.uniforms.uOpacity.value = 0;
+        return;
+      }
+      const focus = focusAt(distance),
         seed = Number(cloud.userData.seed);
       if (focus > pngHeroStrength) {
         pngHeroStrength = focus;
@@ -1272,6 +1306,8 @@ export class OracleWorld {
       while (z > 3) z -= ARCHIVE_DEPTH;
       while (z < -ARCHIVE_DEPTH + 3) z += ARCHIVE_DEPTH;
       icon.position.z = z;
+      icon.visible = Math.abs(z + 4) < 15;
+      if (!icon.visible) return;
       const seed = Number(icon.userData.seed);
       this.projected.copy(icon.position).project(this.camera);
       const sx = this.projected.x * 0.5 + 0.5,
@@ -1307,6 +1343,12 @@ export class OracleWorld {
       while (z < -ARCHIVE_DEPTH + 3) z += ARCHIVE_DEPTH;
       o.position.z = z;
       if (o.userData.isPage) {
+        const mat = (o as THREE.Mesh).material as THREE.ShaderMaterial;
+        o.visible = Math.abs(z + 3) < 15;
+        if (!o.visible) {
+          mat.uniforms.uOpacity.value = 0;
+          return;
+        }
         const side = i % 2 ? 1 : -1,
           visibility = Math.exp(-Math.abs(z + 3) * 0.58),
           fieldStrength = Math.max(heroStrength, pngHeroStrength),
@@ -1314,16 +1356,18 @@ export class OracleWorld {
         o.position.x = Number(o.userData.baseX) + side * fieldStrength * 7;
         o.position.y =
           Number(o.userData.baseY) + Math.sin(i) * fieldStrength * 1.8;
-        const mat = (o as THREE.Mesh).material as THREE.ShaderMaterial;
         mat.uniforms.uOpacity.value =
           Math.min(1, 1.18 * visibility) * (1 - suppression);
         o.rotation.y += side * fieldStrength * dt * 1.4;
-      } else if (!this.artifacts.includes(o) && !this.companions.includes(o)) {
+      } else if (!this.artifactSet.has(o) && !this.companionSet.has(o)) {
         o.rotation.y +=
           dt * (0.015 + Number(o.userData.drift) * 0.03) * (i % 2 ? 1 : -1);
       }
-      if (this.artifacts.includes(o)) {
-        const s = focusAt(Math.abs(z + 4)),
+      if (this.artifactSet.has(o)) {
+        const distance = Math.abs(z + 4);
+        o.visible = distance < 26;
+        if (!o.visible) return;
+        const s = focusAt(distance),
           kind = String(o.userData.name),
           shot = ARTIFACT_SHOTS[kind] ?? {
             x: 0,
@@ -1408,8 +1452,11 @@ export class OracleWorld {
           o.rotation.z = shot.roll + Math.sin(time * 0.16) * 0.05;
         }
       }
-      if (this.companions.includes(o)) {
-        const s = focusAt(Math.abs(z + 4)),
+      if (this.companionSet.has(o)) {
+        const distance = Math.abs(z + 4);
+        o.visible = distance < 19;
+        if (!o.visible) return;
+        const s = focusAt(distance),
           kind = String(o.userData.name),
           scale = 0.06 + s * 0.62;
         o.scale.setScalar(
